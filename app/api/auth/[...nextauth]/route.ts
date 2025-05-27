@@ -6,12 +6,15 @@ async function getUserByLicense(license: string) {
   if (!license) return null;
   const user = await prisma.user.findUnique({
     where: { license },
+    include: {employer: true},
   });
+  console.log("getUserByLicense", user);
   if (!user) return null;
   return {
     id: user.id,
     name: user.name,
     license: user.license,
+    email: user.email,
   };
 }
 
@@ -37,6 +40,28 @@ const handler = NextAuth({
   },
   session: {
     strategy: "jwt",
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      // Add license and email to the token at login
+      if (user) {
+        token.license = user.license;
+        token.email = user.email;
+          token.role = user.role || "applicator"; // Default to 'user' role if not set
+          token.employer = user.employer?.name || '';
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Add license and email to the session
+      if (session.user) {
+        session.user.license = token.license;
+        session.user.email = token.email;
+        session.user.role = token.role;
+        session.user.employer = token.employer;
+      }
+      return session;
+    },
   },
 });
 
