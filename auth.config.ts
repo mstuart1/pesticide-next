@@ -8,6 +8,8 @@ export const authConfig: NextAuthConfig = {
     callbacks: {
         authorized({ auth, request: {nextUrl} }) {
             const isLoggedIn = !!auth?.user;
+            //** this section checks if the user is authorized to visit specific urls */
+            // todo add a check if user is admin to access admin pages
             // const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
             // if (isOnDashboard) {
             //     if (isLoggedIn) return true;
