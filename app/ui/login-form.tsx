@@ -15,6 +15,7 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
   const [errorMessage, formAction, isPending] = useActionState(authenticate, undefined)
+  
   return (
     <form 
     action={formAction}
@@ -46,6 +47,7 @@ export default function LoginForm() {
           </div>
        
         </div>
+        {/* add callbackURL to button */}
         <input type='hidden' name='redirectTo' value={callbackUrl} />
         <Button className="mt-4 w-full" 
         aria-disabled={isPending}
