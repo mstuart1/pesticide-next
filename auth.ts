@@ -2,15 +2,15 @@ import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import Credentials from 'next-auth/providers/credentials';
 import {z} from 'zod';
-
+import prisma from "@/lib/prisma";
 // import bcrypt from "bcryptjs";
 
-import prisma from "@/lib/prisma";
 
 async function getUser(license: string){
+  console.log("Fetching user with license:", license);
   try {
-    const user = await prisma.user.findFirst({where: {license}})
-    console.log(user);
+    const user = await prisma.user.findUnique({where: {license}})
+    console.log('found user ',user);
     return user;
   } catch (error) {
     console.error("Failed to fetch user:", error);
