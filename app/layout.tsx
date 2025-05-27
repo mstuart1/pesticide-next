@@ -1,6 +1,7 @@
 import '@/app/globals.css';
-import { roboto } from './ui/fonts';
 import { Metadata } from 'next';
+import SessionProviderWrapper from '@/app/SessionProvider';
+// import { roboto } from './ui/fonts';
 
 export const metadata: Metadata = {
   title: {
@@ -10,14 +11,14 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://njdep.rutgers.edu/pesticide-surveys'),
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${roboto.className} antialiased`}>{children}</body>
+      <body>
+        <SessionProviderWrapper>
+          {children}
+        </SessionProviderWrapper>
+      </body>
     </html>
   );
 }

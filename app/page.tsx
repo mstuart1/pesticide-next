@@ -1,14 +1,19 @@
-import DepLogo from '@/app/ui/dep-logo';
+// import DepLogo from '@/app/ui/dep-logo';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { roboto } from './ui/fonts';
 import Image from 'next/image';
 import Header from './ui/header';
+import { SessionProvider } from 'next-auth/react';
 
 // import styles from '@/app/ui/home.module.css'
 
 export default function Page() {
+
+  
+
   return (
+    
     <main className="flex min-h-screen flex-col p-6">
       <Header/>
       <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
@@ -45,5 +50,7 @@ export default function Page() {
         </div>
       </div>
     </main>
+  
+    
   );
 }

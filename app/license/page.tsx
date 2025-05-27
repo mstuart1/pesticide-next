@@ -1,18 +1,18 @@
-// import { auth } from "@/auth"
-import { redirect } from "next/navigation";
+'use client';
 
+import { useSession } from "next-auth/react"
 
 const LicensePage = () => {
-
-    const user = localStorage.getItem("pesticideUser") ? JSON.parse(localStorage.getItem("pesticideUser")!) : null;
-    if (!user) {redirect("/login");}
+  const { data: session } = useSession();
+  console.log("Session data:", session);
 
   return (
-  <div>
+    
+      <div>
           {/* user info */}
           <div className={`flex flex-col items-start justify-center my-2 mx-4 gap-4 overflow-x-clip`}>
             <span className={`text-xl text-left block my-2`}>Please take a moment to verify your information.</span>
-             <span>License: {user?.license}</span>
+             {/* <span>License: {user?.license}</span> */}
 
             {/*<Input className={styles.input} type='text' disabled value={currentUser?.name} onChange={(e) => setCurrentUser({ ...currentUser, name: e.target.value })} placeholder='Name' />
 
@@ -32,6 +32,7 @@ const LicensePage = () => {
 
           </div> */}
         </div>
+    
   )
 }
 
