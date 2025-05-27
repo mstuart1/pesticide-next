@@ -1,14 +1,15 @@
-import DepLogo from '@/app/ui/dep-logo';
 import LoginForm from '@/app/ui/login-form';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import Header from '../ui/header';
 
+
 export const metadata: Metadata = {
   title: 'Login',
 }
  
-export default function LoginPage() {
+export default async function LoginPage() {
+  
   return (
    <main className="flex min-h-screen flex-col p-6">
         

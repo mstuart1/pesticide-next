@@ -1,5 +1,8 @@
-'use client';
+"use client";
 
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   AtSymbolIcon,
   ExclamationCircleIcon,
@@ -7,20 +10,34 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
 import { roboto } from './fonts';
-import { useSearchParams } from 'next/navigation';
-import { useActionState } from 'react';
-import { authenticate } from '../lib/actions';
 
 export default function LoginForm() {
+  
+  const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
-  const [errorMessage, formAction, isPending] = useActionState(authenticate, undefined)
-  
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const license = formData.get("license") as string;
+
+    const res = await signIn("credentials", {
+      license,
+      redirect: false,
+      callbackUrl,
+    });
+
+    if (res?.error) {
+      setErrorMessage("Invalid license.");
+    } else if (res?.ok) {
+      router.push(callbackUrl);
+    }
+  }
+
   return (
-    <form 
-    action={formAction}
-     className="space-y-3"
-     >
+    <form onSubmit={handleSubmit} className="space-y-3">
       <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
         <h1 className={`${roboto.className} mb-3 text-2xl text-blue-900`}>
           Please log in to continue.
@@ -45,13 +62,8 @@ export default function LoginForm() {
               <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
           </div>
-       
         </div>
-        {/* add callbackURL to button */}
-        <input type='hidden' name='redirectTo' value={callbackUrl} />
-        <Button className="mt-4 w-full" 
-        aria-disabled={isPending}
-         >
+        <Button className="mt-4 w-full">
           Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
         </Button>
         <div className="flex h-8 items-end space-x-1"
@@ -59,8 +71,8 @@ export default function LoginForm() {
           aria-atomic="true"
         >
           {errorMessage && <>
-          <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-          <p className="text-sm text-red-500">{errorMessage}</p>
+            <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+            <p className="text-sm text-red-500">{errorMessage}</p>
           </>}
         </div>
       </div>
