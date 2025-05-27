@@ -8,10 +8,10 @@ export default function DepLogo() {
     <div
       className={`${roboto.className} flex flex-row items-center leading-none text-white`}
     >
-      <Image src={depIcon}
+      {/* <Image src={depIcon}
       priority
        width={1246} height={1400} // don't have to provide width and height when statically imported
-        alt="NJDEP Logo" className="h-12 w-12 md:h-40 md:w-40" />
+        alt="NJDEP Logo" className="h-12 w-12 md:h-40 md:w-40" /> */}
       {/* <p className="text-[44px]">NJDEP</p> */}
     </div>
   );

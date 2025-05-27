@@ -14,7 +14,7 @@ export default function NewPost() {
       data: {
         title,
         content,
-        authorId: 1,
+        // authorId: 1,
       },
     });
 

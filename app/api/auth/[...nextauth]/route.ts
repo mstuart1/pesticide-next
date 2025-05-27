@@ -1,20 +1,17 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import prisma from "@/lib/prisma"; // <-- Import your Prisma client
+import prisma from "@/lib/prisma";
 
 async function getUserByLicense(license: string) {
-  // Use Prisma to find the user by license
   if (!license) return null;
   const user = await prisma.user.findUnique({
     where: { license },
   });
   if (!user) return null;
-  // Return only the fields you want in the session
   return {
     id: user.id,
     name: user.name,
     license: user.license,
-    // add more fields if needed
   };
 }
 
@@ -43,4 +40,6 @@ const handler = NextAuth({
   },
 });
 
-export { handler as GET, handler as POST };
+// Wrap the handler for App Router compatibility
+export const GET = async (req: Request, ctx: any) => handler(req, ctx);
+export const POST = async (req: Request, ctx: any) => handler(req, ctx);
