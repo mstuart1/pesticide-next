@@ -53,7 +53,7 @@ export default function EmailForm({license, email}: {license: string, email?: st
             id="email"
             type="email"
             name="email"
-            placeholder="Enter your email address"
+            placeholder="Enter email"
             required
             onChange={handleChange}
             value={currentEmail ?? ""}
