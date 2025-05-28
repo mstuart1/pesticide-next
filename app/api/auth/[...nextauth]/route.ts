@@ -1,24 +1,34 @@
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
+import { getUserByLicense } from "../../user/update-email/route";
 
-console.log("NEXTAUTH_SECRET", process.env.NEXTAUTH_SECRET);
-
-async function getUserByLicense(license: string) {
-  if (!license) return null;
-  const user = await prisma.user.findUnique({
-    where: { license },
-    include: {employer: true},
-  });
-  console.log("getUserByLicense", user);
-  if (!user) return null;
-  return {
-    id: user.id,
-    name: user.name,
-    license: user.license,
-    email: user.email,
-  };
+// Extend NextAuth types to include custom properties
+declare module "next-auth" {
+  interface User extends DefaultUser {
+    license?: string;
+    role?: string;
+    employer?: { name: string } | string | null;
+    employees?: any[];
+  }
+  interface Session {
+    user: {
+      license: string;
+      role: string;
+      employer?: string | null;
+      employees?: any[];
+    } & DefaultSession["user"];
+  }
+  interface JWT {
+    license?: string;
+    role?: string;
+    employer?: string | null;
+    employees?: any[];
+  }
 }
+
+
+
 
 const handler = NextAuth({
   providers: [
@@ -27,12 +37,27 @@ const handler = NextAuth({
       credentials: {
         license: { label: "License", type: "text" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         const license = typeof credentials?.license === "string" ? credentials.license : "";
         const user = await getUserByLicense(license);
         if (user) {
-          return user;
+          console.log("User found:", user);
+          // Return a flat object matching the NextAuth User type
+          return {
+            id: user.id,
+            name: user.name ?? null,
+            email: user.email ?? null,
+            license: typeof user.license === "string" ? user.license : undefined,
+            role: user.role ?? "applicator",
+            employer: user.employer
+              ? typeof user.employer === "string"
+                ? user.employer
+                : { name: user.employer.name ?? "" }
+              : null,
+            employees: user.employees ?? [],
+          };
         }
+        console.log("No user found for license:", license);
         return null;
       },
     }),
@@ -50,17 +75,25 @@ const handler = NextAuth({
         token.license = user.license;
         token.email = user.email || '';
           token.role = user.role || "applicator"; // Default to 'user' role if not set
-          token.employer = user.employer?.name || '';
+          token.employer = typeof user.employer === "object" && user.employer !== null
+            ? user.employer.name
+            : typeof user.employer === "string"
+              ? user.employer
+              : '';
+          token.employees = user.employees || [];
       }
       return token;
     },
     async session({ session, token }) {
       // Add license and email to the session
       if (session.user) {
-        session.user.license = token.license;
+        session.user.license = typeof token.license === "string" ? token.license : "";
         session.user.email = token.email;
-        session.user.role = token.role;
-        session.user.employer = token.employer;
+        session.user.role = typeof token.role === "string" ? token.role : "applicator";
+        session.user.employer = typeof token.employer === "string" || token.employer === null || token.employer === undefined
+          ? token.employer
+          : String(token.employer);
+        session.user.employees = Array.isArray(token.employees) ? token.employees : undefined;
       }
       return session;
     },
