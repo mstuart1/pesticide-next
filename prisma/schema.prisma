@@ -8,22 +8,21 @@ datasource db {
 }
 
 model User {
-  id             String     @id @default(uuid())
-  email          String?
-  name           String?
-  role           String?    @default("applicator") // applicator, admin, business, golfCourse
-  // tokens         Token[]
+  id    String  @id @default(uuid())
+  email String?
+  name  String?
+  role  String? @default("applicator") // applicator, admin, business, golfCourse
+
   license        String?    @unique // admins do not have a license
-  // responses      Response[]
+  responses      Response[]
   expirationDate String?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @default(now()) @updatedAt
   employer       User?      @relation("EmployerEmployees", fields: [employerId], references: [id])
   employerId     String?
   employees      User[]     @relation("EmployerEmployees")
-  // PrivateSurvey  PrivateSurvey[]
-  // MosquitoSurvey MosquitoSurvey[]
-  categories     Category[]
+
+  categories Category[]
 
   @@index([license])
 }
@@ -46,4 +45,46 @@ model Post {
   published Boolean @default(false)
   // authorId  Int
   // author    User    @relation(fields: [authorId], references: [id])
+}
+
+model Response {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  year          Int
+  surveyType    String // structural, private, mosquito, row, turf, golf
+  noApplication Boolean  @default(false)
+  amountUsed    Float?
+  unit          String?
+  county        String?
+
+  //Relation fields
+  user        User       @relation(fields: [userId], references: [id])
+  userId      String
+  pesticide   Pesticides @relation(fields: [pesticideId], references: [id])
+  pesticideId Int
+
+  @@index([userId])
+}
+
+model Pesticides {
+  id           Int        @id @default(autoincrement())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  brand        String
+  epaReg1      String?
+  epaReg2      String?
+  epaReg3      String?
+  class        String?
+  chem1        String?
+  formulation1 Int?
+  chem2        String?
+  formulation2 Int?
+  chem3        String?
+  formulation3 Int?
+  chem4        String?
+  formulation4 Int?
+  chem5        String?
+  formulation5 Int?
+  response     Response[]
 }
