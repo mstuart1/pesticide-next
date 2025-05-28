@@ -7,7 +7,8 @@ import { redirect } from "next/navigation";
 import { Button } from "../ui/button";
 import {ArrowRightIcon} from '@heroicons/react/24/outline';
 import ResponsibleApplicator from "./responsible-applicator";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import BusinessView from "./business-view";
 
 type SessionUser = {
   name?: string | null;
@@ -47,11 +48,11 @@ const LicensePage = () => {
     // todo replace this with skeletons
     return <div>Loading...</div>;
   }
+    if (user?.role === 'business') {
     setIsBusiness(true);
-  }  else if (session.user.license[0] === '9') {
+  }  else if (user?.license?.[0] === '9') {
     setIsBusiness(true);
   }
-
   return (
 
     <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
@@ -62,13 +63,13 @@ const LicensePage = () => {
           Please take a moment to verify your information.
         </h1>
         <span className={`text-xl text-left block my-2`}></span>
-        <span>License: {session?.user?.license}</span>
-        <span>Name: {session?.user?.name}</span>
+        <span>License: {user?.license}</span>
+        <span>Name: {user?.name}</span>
         <EmailForm
-          email={session?.user?.email ?? undefined}
-          license={session?.user?.license}
+          email={user?.email ?? undefined}
+          license={user?.license ?? ""}
         />
-       {isBusiness ? <BusinessView/> :  <ResponsibleApplicator user={session.user}/>}
+       {isBusiness ? <BusinessView/> :  <ResponsibleApplicator user={user}/>}
         
         
             
