@@ -22,8 +22,9 @@ const LicensePage = () => {
   const router = useRouter();
   const [isBusiness, setIsBusiness] = useState(false);
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [verifying, setVerifying] = useState(false);
+const [verifyError, setVerifyError] = useState<string | null>(null);
 
-  
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/login");
@@ -46,6 +47,8 @@ const LicensePage = () => {
   }, [user]);
 
 
+
+
  // Don't render anything until session is loaded and user is set
   if (status === 'loading' || !user) {
     // Optionally, show a loading spinner or skeleton here
@@ -57,6 +60,27 @@ const LicensePage = () => {
     return null;
   }
   
+
+    const handleVerify = async () => {
+  setVerifying(true);
+  setVerifyError(null);
+  try {
+    const res = await fetch("/api/user/verify", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) {
+      setVerifyError(data.error || "Failed to verify.");
+    } else {
+      // Optionally, show a success message or refresh session
+      router.refresh();
+    }
+  } catch (err) {
+    setVerifyError("Failed to verify.");
+  } finally {
+    setVerifying(false);
+  }
+  router.push('/dashboard');
+};
+
   return (
 
     <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
@@ -79,7 +103,7 @@ const LicensePage = () => {
             
          
     <Button
-  // onClick={() => updateUser({ email: currentEmail, license })}
+  onClick={handleVerify}
   className="h-[42px] px-4 flex-shrink-0  hover:bg-blue-50 hover:border-blue-900 hover:text-blue-900 transition-colors"
 >
   This information is correct <ArrowRightIcon className="ml-2 h-5 w-5" />
