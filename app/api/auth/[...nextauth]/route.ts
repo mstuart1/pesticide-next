@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 
+console.log("NEXTAUTH_SECRET", process.env.NEXTAUTH_SECRET);
+
 async function getUserByLicense(license: string) {
   if (!license) return null;
   const user = await prisma.user.findUnique({
@@ -46,7 +48,7 @@ const handler = NextAuth({
       // Add license and email to the token at login
       if (user) {
         token.license = user.license;
-        token.email = user.email;
+        token.email = user.email || '';
           token.role = user.role || "applicator"; // Default to 'user' role if not set
           token.employer = user.employer?.name || '';
       }
@@ -63,6 +65,17 @@ const handler = NextAuth({
       return session;
     },
   },
+  cookies: {
+  sessionToken: {
+    name: `next-auth.session-token`,
+    options: {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      secure: false,
+    },
+  },
+},
 });
 
 // Wrap the handler for App Router compatibility

@@ -3,18 +3,14 @@ import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { roboto } from './ui/fonts';
 import Image from 'next/image';
-import Header from './ui/header';
-import { SessionProvider } from 'next-auth/react';
 
 // import styles from '@/app/ui/home.module.css'
 
 export default function Page() {
 
-  
+  console.log('env is loading',process.env.NEXTAUTH_URL);
 
   return (
-    
-   
       <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
         <div className="flex flex-col justify-center gap-6 rounded-lg bg-gray-50 px-6 py-10 md:w-2/5 md:px-20">
        

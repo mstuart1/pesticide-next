@@ -1,4 +1,4 @@
-import LoginForm from '@/app/ui/login-form';
+import LoginForm from '@/app/login/login-form';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 

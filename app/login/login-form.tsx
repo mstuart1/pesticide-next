@@ -8,8 +8,8 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
-import { Button } from './button';
-import { roboto } from './fonts';
+import { Button } from '../ui/button';
+import { roboto } from '../ui/fonts';
 
 export default function LoginForm() {
   
