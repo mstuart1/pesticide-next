@@ -41,3 +41,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+prisma/migrations/20250528175315_add_more_tables/migration.sql
