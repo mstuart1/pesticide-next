@@ -29,12 +29,24 @@ const LicensePage = () => {
 
   const { data: session } = useSession() as { data: SessionData | null };
   const [isBusiness, setIsBusiness] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<SessionUser | null>(null);
 
-  if (!session || !session.user || !session.user.license) {
-   redirect('/login');
+  useEffect(() => {
+    if (session?.user) {
+      setUser(session.user);
+      setIsLoading(false);
+    } else {
+      setIsLoading(true)
+    }
+  }, [session])
+
+
+
+  if (isLoading) {
+    // todo replace this with skeletons
+    return <div>Loading...</div>;
   }
-
-  if (session.user.role === 'business') {
     setIsBusiness(true);
   }  else if (session.user.license[0] === '9') {
     setIsBusiness(true);
