@@ -1,4 +1,4 @@
-import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
+import NextAuth, { DefaultSession, DefaultUser, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import { getUserByLicense } from "../../user/update-email/route";
@@ -30,7 +30,7 @@ declare module "next-auth" {
 
 
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "License",
@@ -41,8 +41,6 @@ const handler = NextAuth({
         const license = typeof credentials?.license === "string" ? credentials.license : "";
         const user = await getUserByLicense(license);
         if (user) {
-          console.log("User found:", user);
-          // Return a flat object matching the NextAuth User type
           return {
             id: user.id,
             name: user.name ?? null,
@@ -57,7 +55,6 @@ const handler = NextAuth({
             employees: user.employees ?? [],
           };
         }
-        console.log("No user found for license:", license);
         return null;
       },
     }),
@@ -70,22 +67,20 @@ const handler = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      // Add license and email to the token at login
       if (user) {
         token.license = user.license;
         token.email = user.email || '';
-          token.role = user.role || "applicator"; // Default to 'user' role if not set
-          token.employer = typeof user.employer === "object" && user.employer !== null
-            ? user.employer.name
-            : typeof user.employer === "string"
-              ? user.employer
-              : '';
-          token.employees = user.employees || [];
+        token.role = user.role || "applicator";
+        token.employer = typeof user.employer === "object" && user.employer !== null
+          ? user.employer.name
+          : typeof user.employer === "string"
+            ? user.employer
+            : '';
+        token.employees = user.employees || [];
       }
       return token;
     },
     async session({ session, token }) {
-      // Add license and email to the session
       if (session.user) {
         session.user.license = typeof token.license === "string" ? token.license : "";
         session.user.email = token.email;
@@ -99,17 +94,19 @@ const handler = NextAuth({
     },
   },
   cookies: {
-  sessionToken: {
-    name: `next-auth.session-token`,
-    options: {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      secure: false,
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: false,
+      },
     },
   },
-},
-});
+};
+
+const handler = NextAuth(authOptions);
 
 // Wrap the handler for App Router compatibility
 export const GET = async (req: Request, ctx: any) => handler(req, ctx);
