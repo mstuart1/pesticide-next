@@ -5,27 +5,49 @@ import { Button } from '../ui/button';
 import { roboto } from '../ui/fonts';
 import { AtSymbolIcon, UserMinusIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import { Employee, SessionUser } from '../lib/definitions';
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+
 
 const BusinessView = ({user}: {user: SessionUser}) => {
+  const router = useRouter();
+
   const [employees, setEmployees] = useState<Employee[]>(user?.employees || []  );
   const [newLicense, setNewLicense] = useState('');
   const [error, setError] = useState('');
+  
+  const handleAddEmployee = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
+  if (!newLicense.trim()) {
+    setError('Please enter a license number.');
+    return;
+  }
+  if (employees.some(emp => emp.license === newLicense.trim())) {
+    setError('Employee already exists.');
+    return;
+  }
 
-  const handleAddEmployee = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    if (!newLicense.trim()) {
-      setError('Please enter a license number.');
+  try {
+    const res = await fetch('/api/user/add-employee', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ license: newLicense.trim() }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || 'Failed to add employee.');
       return;
     }
-    if (employees.some(emp => emp.license === newLicense.trim())) {
-      setError('Employee already exists.');
-      return;
-    }
-    // In a real app, fetch employee name from API
-    setEmployees([...employees, { license: newLicense.trim(), name: 'New Employee' }]);
+    console.log("Employee added:", data);
+    setEmployees(data.employees);
     setNewLicense('');
-  };
+    await signIn("credentials", { redirect: false });
+router.refresh();
+  } catch (err) {
+    setError('Failed to add employee.');
+  }
+};
 
   const handleRemoveEmployee = (license: string) => {
     setEmployees(employees.filter(emp => emp.license !== license));
@@ -41,9 +63,7 @@ const BusinessView = ({user}: {user: SessionUser}) => {
           <li key={emp.license} className="flex items-center justify-between bg-white rounded-md px-3 py-2 border border-gray-200">
             <span className="text-blue-900">{emp.name} <span className="text-xs text-gray-500">({emp.license})</span></span>
             <Button
-              type="button"
-              // variant="outline"
-              className="ml-2 px-2 py-1 text-red-600 border-red-200 hover:bg-red-50"
+              className="ml-2 px-2 py-1 text-red-600! bg-white hover:bg-red-50"
               onClick={() => handleRemoveEmployee(emp.license)}
               title="Remove employee"
             >
@@ -72,7 +92,7 @@ const BusinessView = ({user}: {user: SessionUser}) => {
           />
           <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
         </div>
-        <Button type="submit" className="w-full flex items-center justify-center">
+        <Button type="submit" className="bg-white text-blue-900! w-full flex items-center justify-center">
           Add Employee <UserPlusIcon className="ml-2 h-5 w-5" />
         </Button>
         {error && <div className="flex items-center text-red-500 text-sm mt-1">{error}</div>}
