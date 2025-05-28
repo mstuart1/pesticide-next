@@ -3,24 +3,14 @@
 import { useSession } from "next-auth/react"
 import { roboto } from "@/app/ui/fonts";
 import EmailForm from "./email-form";
-import { redirect } from "next/navigation";
 import { Button } from "../ui/button";
 import {ArrowRightIcon} from '@heroicons/react/24/outline';
 import ResponsibleApplicator from "./responsible-applicator";
 import { useEffect, useState } from "react";
 import BusinessView from "./business-view";
+import { useRouter } from "next/navigation";
+import { SessionUser, SessionData } from "@/app/lib/definitions";
 
-type SessionUser = {
-  name?: string | null;
-  email?: string | null;
-  license?: string | null;
-  employer?: string | null;
-  role?: string | null;
-};
-
-type SessionData = {
-  user?: SessionUser;
-};
 
 const LicensePage = () => {
 
@@ -28,31 +18,45 @@ const LicensePage = () => {
   // todo check if this is a user or a business and show appropriate content
   // todo if individual, provide the option to select that you are the responsible applicator and show all of the employees for that employer or allow the user to remove the employer
 
-  const { data: session } = useSession() as { data: SessionData | null };
+  const { data: session, status } = useSession() as { data: SessionData | null, status: string };
+  const router = useRouter();
   const [isBusiness, setIsBusiness] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<SessionUser | null>(null);
 
+  
   useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/login");
+    }
+  }, [status, router]);
+
+   useEffect(() => {
     if (session?.user) {
       setUser(session.user);
-      setIsLoading(false);
-    } else {
-      setIsLoading(true)
     }
-  }, [session])
+  }, [session]);
+
+    useEffect(() => {
+    if (!user) return;
+    if (user.role === 'business' || user.license?.[0] === '9') {
+      setIsBusiness(true);
+    } else {
+      setIsBusiness(false);
+    }
+  }, [user]);
 
 
-
-  if (isLoading) {
-    // todo replace this with skeletons
+ // Don't render anything until session is loaded and user is set
+  if (status === 'loading' || !user) {
+    // Optionally, show a loading spinner or skeleton here
     return <div>Loading...</div>;
   }
-    if (user?.role === 'business') {
-    setIsBusiness(true);
-  }  else if (user?.license?.[0] === '9') {
-    setIsBusiness(true);
+
+  if (status === 'unauthenticated') {
+    router.replace('/login');
+    return null;
   }
+  
   return (
 
     <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
@@ -69,7 +73,7 @@ const LicensePage = () => {
           email={user?.email ?? undefined}
           license={user?.license ?? ""}
         />
-       {isBusiness ? <BusinessView/> :  <ResponsibleApplicator user={user}/>}
+       {isBusiness ? <BusinessView user={user}/> :  <ResponsibleApplicator user={user}/>}
         
         
             
